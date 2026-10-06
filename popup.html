@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Review Scraper</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Shopee Review Scraper</h1>
+
+        <!-- Status -->
+        <div id="status" class="status"></div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="scrapeBtn" class="btn btn-primary">
+                🔍 Bắt Đầu Lấy Dữ Liệu
+            </button>
+            <button id="scrollBtn" class="btn btn-secondary" disabled>
+                ⬇️ Scroll Tải Thêm
+            </button>
+            <button id="exportBtn" class="btn btn-success" disabled>
+                📥 Export CSV
+            </button>
+            <button id="clearBtn" class="btn btn-danger">
+                🗑️ Xóa Dữ Liệu
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stat-item">
+                <span class="label">📝 Tổng Comment:</span>
+                <span id="totalComments" class="value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">⭐ Đánh Giá Trung Bình:</span>
+                <span id="avgRating" class="value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">👍 Like Trung Bình:</span>
+                <span id="avgLikes" class="value">0</span>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div id="dataContainer" class="data-container">
+            <table id="dataTable" class="data-table">
+                <thead>
+                    <tr>
+                        <th>Người Dùng</th>
+                        <th>⭐ Đánh Giá</th>
+                        <th>💬 Comment</th>
+                        <th>👍 Like</th>
+                        <th>📅 Ngày</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Progress -->
+        <div id="progress" class="progress" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+            <p id="progressText">Đang tải...</p>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

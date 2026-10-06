@@ -1,0 +1,22 @@
+{
+  "name": "shopee-review-scraper",
+  "version": "1.0.0",
+  "description": "Chrome Extension để lấy dữ liệu comment/feedback khách hàng từ sản phẩm Shopee",
+  "author": "TruongDoM1001",
+  "license": "MIT",
+  "keywords": [
+    "shopee",
+    "scraper",
+    "chrome-extension",
+    "review",
+    "feedback",
+    "comment"
+  ],
+  "scripts": {
+    "build": "echo \"No build needed for this extension\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TruongDoM1001/shopee-review-scraper.git"
+  }
+}
