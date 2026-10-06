@@ -13,63 +13,71 @@ class ShopeeContentScraper {
                 this.scrollAndLoadMore(request.count).then(() => {
                     sendResponse({ reviews: this.reviews });
                 });
+                return true; // giữ kênh message mở cho phản hồi bất đồng bộ
             }
         });
     }
 
+    // querySelectorAll luôn trả về NodeList (truthy) nên không dùng || được
+    queryFirstNonEmpty(root, selectors) {
+        for (const sel of selectors) {
+            const found = root.querySelectorAll(sel);
+            if (found.length > 0) return found;
+        }
+        return [];
+    }
+
     scrapeCurrentReviews() {
-        this.reviews = [];
-        
-        // Selector cho comment trong Shopee - cần điều chỉnh theo cấu trúc thực tế
-        const reviewElements = document.querySelectorAll('[data-testid="comment-container"]') ||
-                               document.querySelectorAll('.shopee-comment-item') ||
-                               document.querySelectorAll('[class*="comment"]');
+        const found = [];
+
+        // Selector cần chỉnh theo cấu trúc thực tế của Shopee (dùng DevTools để kiểm tra)
+        const reviewElements = this.queryFirstNonEmpty(document, [
+            '[data-testid="comment-container"]',
+            '.shopee-product-rating',
+            '[class*="product-rating"]'
+        ]);
 
         reviewElements.forEach((element, index) => {
             try {
                 const review = this.parseReviewElement(element);
-                if (review) {
-                    this.reviews.push(review);
-                }
+                if (review) found.push(review);
             } catch (error) {
                 console.error(`Lỗi parse review ${index}:`, error);
             }
         });
 
+        // Gộp, loại trùng
+        for (const r of found) {
+            const dup = this.reviews.some(e => e.username === r.username && e.comment === r.comment && e.date === r.date);
+            if (!dup) this.reviews.push(r);
+        }
+
         console.log(`Đã lấy ${this.reviews.length} reviews`);
     }
 
+    first(root, selectors) {
+        for (const sel of selectors) {
+            const el = root.querySelector(sel);
+            if (el) return el;
+        }
+        return null;
+    }
+
     parseReviewElement(element) {
-        // Tìm username
-        const usernameEl = element.querySelector('[class*="username"]') ||
-                          element.querySelector('[class*="name"]') ||
-                          element.querySelector('span:first-child');
-        
-        // Tìm rating (số sao)
-        const ratingEl = element.querySelector('[class*="rating"]') ||
-                        element.querySelector('[class*="star"]');
-        
-        // Tìm comment text
-        const commentEl = element.querySelector('[class*="comment-text"]') ||
-                         element.querySelector('[class*="text"]') ||
-                         element.querySelector('p');
-        
-        // Tìm like count
-        const likeEl = element.querySelector('[class*="like"]') ||
-                      element.querySelector('[class*="favorite"]');
-        
-        // Tìm ngày
-        const dateEl = element.querySelector('[class*="date"]') ||
-                      element.querySelector('[class*="time"]');
+        const usernameEl = this.first(element, ['[class*="author"]', '[class*="username"]', '[class*="name"]']);
+        const ratingEl = this.first(element, ['[class*="rating"]', '[class*="star"]']);
+        const commentEl = this.first(element, ['[class*="comment-text"]', '[class*="content"]', 'p']);
+        const likeEl = this.first(element, ['[class*="like"]', '[class*="favorite"]']);
+        const dateEl = this.first(element, ['[class*="date"]', '[class*="time"]']);
 
         if (!usernameEl || !commentEl) return null;
 
         return {
             username: this.extractText(usernameEl),
-            rating: this.extractRating(ratingEl),
+            rating: this.extractRating(element, ratingEl),
             comment: this.extractText(commentEl),
             likes: this.extractNumber(likeEl),
-            date: this.extractDate(dateEl)
+            date: this.extractText(dateEl)
         };
     }
 
@@ -77,32 +85,25 @@ class ShopeeContentScraper {
         return el ? el.textContent.trim() : 'N/A';
     }
 
-    extractRating(el) {
+    extractRating(root, el) {
+        // Shopee thường hiển thị sao bằng các icon; đếm icon sao đầy nếu có
+        const solid = root.querySelectorAll('[class*="star"][class*="solid"], [class*="icon-rating-solid"]');
+        if (solid.length > 0) return Math.min(solid.length, 5);
         if (!el) return 0;
-        const text = el.textContent;
-        const match = text.match(/(\d)/);
-        return match ? parseInt(match[1]) : 0;
+        const match = el.textContent.match(/(\d)/);
+        return match ? Math.min(parseInt(match[1], 10), 5) : 0;
     }
 
     extractNumber(el) {
         if (!el) return 0;
-        const text = el.textContent;
-        const match = text.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-    }
-
-    extractDate(el) {
-        return el ? el.textContent.trim() : 'N/A';
+        const match = el.textContent.match(/(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
     }
 
     async scrollAndLoadMore(count) {
-        const scrollContainer = document.querySelector('[class*="comments"]') || window;
-        
         for (let i = 0; i < count; i++) {
-            scrollContainer.scrollBy({ top: 500, behavior: 'smooth' });
-            await this.delay(300);
-            
-            // Lấy reviews mới sau khi scroll
+            window.scrollBy({ top: 600, behavior: 'smooth' });
+            await this.delay(800);
             this.scrapeCurrentReviews();
         }
     }

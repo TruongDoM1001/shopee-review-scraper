@@ -3,30 +3,20 @@
   "name": "Shopee Review Scraper",
   "version": "1.0.0",
   "description": "Lấy dữ liệu comment/feedback khách hàng từ sản phẩm Shopee",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage"
-  ],
-  "host_permissions": [
-    "https://shopee.vn/*",
-    "https://www.shopee.vn/*"
-  ],
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["https://shopee.vn/*", "https://www.shopee.vn/*"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Shopee Review Scraper",
-    "default_icons": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_title": "Shopee Review Scraper"
   },
   "background": {
     "service_worker": "background.js"
   },
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+  "content_scripts": [
+    {
+      "matches": ["https://shopee.vn/*", "https://www.shopee.vn/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }
